@@ -57,6 +57,7 @@ exports.login = async (req, res) => {
         status: user.status,
         rejectionReason: user.rejectionReason,
         role: user.role,
+        referralCode: user.referralCode,
       },
     });
   } catch (error) {
