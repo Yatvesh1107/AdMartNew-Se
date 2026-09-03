@@ -69,14 +69,26 @@ exports.login = async (req, res) => {
 exports.register = async (req, res) => {
   try {
     const {
-      fullName, mobile, password,
+      fullName, mobile, password, confirmPassword,
       house, street, locality, city, state, pincode,
       aadhaarNumber, panNumber,
       referralCode,
     } = req.body;
 
-    if (!fullName || !mobile || !password) {
-      return res.status(400).json({ message: 'Name, mobile, and password are required' });
+    if (!fullName || !fullName.trim()) {
+      return res.status(400).json({ message: 'Full name is required' });
+    }
+
+    if (!mobile || !mobile.trim()) {
+      return res.status(400).json({ message: 'Mobile number is required' });
+    }
+
+    if (!/^[0-9]{10}$/.test(mobile.trim())) {
+      return res.status(400).json({ message: 'Enter a valid 10-digit mobile number' });
+    }
+
+    if (!password) {
+      return res.status(400).json({ message: 'Password is required' });
     }
 
     const existingUser = await User.findOne({ mobile });
@@ -88,7 +100,32 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
 
+    if (!confirmPassword) {
+      return res.status(400).json({ message: 'Confirm password is required' });
+    }
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: 'Passwords do not match' });
+    }
+
     const files = req.files || {};
+
+    if (!aadhaarNumber || !aadhaarNumber.trim()) {
+      return res.status(400).json({ message: 'Aadhaar number is required' });
+    }
+
+    if (!/^[0-9]{12}$/.test(aadhaarNumber.trim())) {
+      return res.status(400).json({ message: 'Enter a valid 12-digit Aadhaar number' });
+    }
+
+    if (!files.aadhaarFront || files.aadhaarFront[0].filename === '') {
+      return res.status(400).json({ message: 'Aadhaar front photo is required' });
+    }
+
+    if (!files.aadhaarBack || files.aadhaarBack[0].filename === '') {
+      return res.status(400).json({ message: 'Aadhaar back photo is required' });
+    }
+
     const userData = {
       fullName,
       mobile,
